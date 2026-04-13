@@ -26,11 +26,18 @@ def print_startup_banner():
 
 
 def _draw_slider(stdscr, row, label, value, selected, width=26):
+    _, max_x = stdscr.getmaxyx()
+
+    # Keep a safe right margin so tiny terminals don't throw curses ERR.
+    max_bar_width = max(8, max_x - 36)
+    width = max(8, min(width, max_bar_width))
+
     filled = int((value / 127.0) * width)
     bar = "#" * filled + "-" * (width - filled)
     marker = ">" if selected else " "
     attr = curses.color_pair(4) if selected else curses.color_pair(2)
-    stdscr.addstr(row, 2, f"{marker} {label:<22} [{bar}] {value:>3}", attr)
+    line = f"{marker} {label:<22} [{bar}] {value:>3}"
+    _safe_addstr(stdscr, row, 2, line[: max(0, max_x - 3)], attr)
 
 
 def _safe_addstr(stdscr, y, x, text, attr=0):
@@ -380,8 +387,10 @@ def main():
     try:
         synth = AmbientSynth(soundfont_file)
         keyboard = MidiKeyboard()
+        keyboard.validate_connection()
     except Exception as e:
         print(f"\033[91mStartup Error:\033[0m {e}")
+        print("\033[93m[Hint]\033[0m Connect your MIDI device and retry.")
         sys.exit(1)
 
     recorder = SessionRecorder()
@@ -400,6 +409,10 @@ def main():
         meter.note_off(note)
 
     running = True
+    startup_midi_error = {"error": None}
+
+    def _midi_error_callback(exc):
+        startup_midi_error["error"] = exc
 
     # 3. Start MIDI listener in background and keep terminal free for live sliders
     midi_thread = threading.Thread(
@@ -408,10 +421,21 @@ def main():
             "on_press": handle_note_press,
             "on_release": handle_note_release,
             "should_continue": lambda: running,
+            "on_error": _midi_error_callback,
         },
         daemon=True,
     )
     midi_thread.start()
+
+    # Fail before showing the control panel if listener can't open/connect.
+    time.sleep(0.15)
+    if startup_midi_error["error"] is not None:
+        running = False
+        midi_thread.join(timeout=1.0)
+        print(f"\033[91mStartup Error:\033[0m MIDI listener failed: {startup_midi_error['error']}")
+        print("\033[93m[Hint]\033[0m Verify MIDI cable/power and selected device in OS MIDI settings.")
+        synth.cleanup()
+        sys.exit(1)
 
     try:
         run_terminal_controls(synth, recorder, meter)

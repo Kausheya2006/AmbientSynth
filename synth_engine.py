@@ -1,5 +1,7 @@
 import fluidsynth
 import threading
+import os
+import sys
 
 
 def _color(msg, code="36"):
@@ -22,10 +24,12 @@ class AmbientSynth:
         "cinematic": {"reverb_send": 102, "chorus_send": 16, "sustain": 108, "release": 96},
     }
 
-    def __init__(self, soundfont_path):
+    def __init__(self, soundfont_path, preferred_driver=None):
         print(_color("[Audio] Booting FluidSynth...", "96"))
         
         self.soundfont_path = soundfont_path
+        self.preferred_driver = preferred_driver or os.environ.get("AMBIENT_SYNTH_AUDIO_DRIVER")
+        self.active_driver = None
         self._lock = threading.Lock()
         self.velocity_curve_exp = 1.5
         self.live_controls = {
@@ -38,6 +42,42 @@ class AmbientSynth:
             "soft_pedal": 0,     # CC67
         }
         self._init_synth()
+
+    def _default_audio_driver(self):
+        # Simple OS-based driver mapping.
+        if sys.platform == "darwin":
+            return "coreaudio"
+        if sys.platform.startswith("linux"):
+            return "pulseaudio"
+        if sys.platform == "win32":
+            return "dsound"
+        return "alsa"
+
+    def _start_audio_engine(self):
+        preferred = (self.preferred_driver or self._default_audio_driver()).strip()
+        print(_color(f"[Audio] OS detected: {sys.platform} | preferred driver: {preferred}", "96"))
+        fallback_map = {
+            "coreaudio": ["portaudio", "pulseaudio", "alsa"],
+            "pulseaudio": ["alsa", "jack", "portaudio"],
+            "dsound": ["wasapi", "winmme", "portaudio"],
+            "alsa": ["pulseaudio", "jack", "portaudio"],
+        }
+
+        candidates = [preferred] + fallback_map.get(preferred, ["portaudio", "pulseaudio", "alsa"])
+
+        attempted = []
+        for driver in candidates:
+            attempted.append(driver)
+            try:
+                self.fs.start(driver=driver)
+                self.active_driver = driver
+                print(_color(f"[Audio] Using driver: {driver}", "92"))
+                return
+            except Exception as exc:
+                print(_color(f"[Audio] Driver '{driver}' failed: {exc}", "93"))
+
+        joined = ", ".join(attempted)
+        raise RuntimeError(f"Could not start FluidSynth audio driver. Tried: {joined}")
 
     def _init_synth(self):
         """Initialize synth properly (single source of truth)."""
@@ -58,8 +98,8 @@ class AmbientSynth:
         self.fs.setting("synth.chorus.depth", 2.0)
         self.fs.setting("synth.chorus.level", 0.0)
 
-        # Start audio engine
-        self.fs.start(driver="coreaudio")
+        # Start audio engine with platform-aware fallback.
+        self._start_audio_engine()
 
         # Load soundfont
         self.sfid = self.fs.sfload(self.soundfont_path)
@@ -68,6 +108,15 @@ class AmbientSynth:
         self._apply_live_controls()
 
         print(_color("[Audio] Synth ready.", "92"))
+
+    def switch_audio_driver(self, driver):
+        """Switch FluidSynth backend driver and reload audio safely."""
+        driver = (driver or "").strip()
+        if not driver:
+            raise ValueError("Driver name cannot be empty")
+
+        self.preferred_driver = driver
+        self.reload()
 
     def _apply_live_controls(self):
         """Apply runtime-tweakable MIDI controls."""

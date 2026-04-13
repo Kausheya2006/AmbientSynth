@@ -6,18 +6,16 @@ This project focuses on simple setup, low overhead, and live sound control while
 
 ## Version
 
-Current version: v0.0.2
+Current version: v0.0.3
 
-## What Is Included in v0.0.2
+## What Is Included in v0.0.3
 
-- Real-time terminal control panel
-- Live parameter updates without restarting the app
-- Preset switching from the keyboard
-- Soft pedal support
-- Velocity curve for more natural playing response
-- Velocity-dependent brightness shaping
-- Safer reload and cleanup flow to reduce stuck notes
-- Cleaner default piano voicing with reduced mud/harshness
+- Dynamic audio backend selection by OS (CoreAudio/PulseAudio/DirectSound defaults)
+- Audio driver fallback attempts when preferred backend is unavailable
+- Clear startup logs for detected OS and selected audio backend
+- MIDI connection preflight validation before launching control panel
+- Fail-fast startup behavior with user-friendly error and hint messages
+- Terminal slider rendering made width-safe to avoid curses crashes on small windows
 
 ## Features
 
@@ -36,6 +34,8 @@ Current version: v0.0.2
 	- studio
 	- cinematic
 - Reload key to reinitialize synth safely
+- Record and export MIDI takes
+
 
 ## Project Layout
 

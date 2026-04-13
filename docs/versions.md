@@ -20,3 +20,11 @@
 - Added larger recording animation with clearer REC and PAUSED states.
 - Added realtime output activity histogram bars (L/R) that respond while playing.
 - Kept named take export in `recordings/` as `.mid` by default.
+
+## v0.0.3
+- Added OS-based FluidSynth backend selection defaults (`coreaudio`, `pulseaudio`, `dsound`, fallback `alsa`).
+- Added backend fallback attempts when preferred audio driver is not available.
+- Added clearer audio startup logs for detected OS and selected driver.
+- Added MIDI input connection preflight validation before control panel launch.
+- Added listener-start failure handling so startup exits with clear errors instead of opening UI.
+- Fixed terminal UI slider rendering to avoid `_curses.error` on narrow terminals.
