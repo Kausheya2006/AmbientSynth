@@ -1,7 +1,21 @@
 import fluidsynth
 import threading
 
+
+def _color(msg, code="36"):
+    return f"\033[{code}m{msg}\033[0m"
+
 class AmbientSynth:
+    CC_MAP = {
+        "volume": 7,
+        "expression": 11,
+        "sustain": 64,
+        "release": 72,
+        "reverb_send": 91,
+        "chorus_send": 93,
+        "soft_pedal": 67,
+    }
+
     PRESETS = {
         "ambient": {"reverb_send": 82, "chorus_send": 6, "sustain": 98, "release": 88},
         "studio": {"reverb_send": 44, "chorus_send": 0, "sustain": 84, "release": 72},
@@ -9,7 +23,7 @@ class AmbientSynth:
     }
 
     def __init__(self, soundfont_path):
-        print("[Audio] Booting FluidSynth...")
+        print(_color("[Audio] Booting FluidSynth...", "96"))
         
         self.soundfont_path = soundfont_path
         self._lock = threading.Lock()
@@ -53,7 +67,7 @@ class AmbientSynth:
 
         self._apply_live_controls()
 
-        print("[Audio] Synth ready.")
+        print(_color("[Audio] Synth ready.", "92"))
 
     def _apply_live_controls(self):
         """Apply runtime-tweakable MIDI controls."""
@@ -73,18 +87,8 @@ class AmbientSynth:
         value = max(0, min(127, int(value)))
         self.live_controls[name] = value
 
-        cc_map = {
-            "volume": 7,
-            "expression": 11,
-            "sustain": 64,
-            "release": 72,
-            "reverb_send": 91,
-            "chorus_send": 93,
-            "soft_pedal": 67,
-        }
-
         with self._lock:
-            self.fs.cc(0, cc_map[name], value)
+            self.fs.cc(0, self.CC_MAP[name], value)
 
     def apply_preset(self, name):
         """Apply one of the predefined live-control presets."""
@@ -116,7 +120,7 @@ class AmbientSynth:
 
     def reload(self):
         """Proper full reload."""
-        print("[Audio] Reloading synth...")
+        print(_color("[Audio] Reloading synth...", "93"))
 
         try:
             with self._lock:
@@ -127,7 +131,7 @@ class AmbientSynth:
 
         self._init_synth()
 
-        print("[Audio] Synth fully reloaded.")
+        print(_color("[Audio] Synth fully reloaded.", "92"))
 
     def cleanup(self):
         """Shutdown safely."""
@@ -138,4 +142,4 @@ class AmbientSynth:
                 self.fs.delete()
         except Exception:
             pass
-        print("[Audio] Engine shut down.")
+        print(_color("[Audio] Engine shut down.", "90"))

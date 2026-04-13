@@ -1,9 +1,13 @@
 import mido
 import time
 
+
+def _color(msg, code="36"):
+    return f"\033[{code}m{msg}\033[0m"
+
 class MidiKeyboard:
     def __init__(self):
-        print("[MIDI] Scanning for devices...")
+        print(_color("[MIDI] Scanning for devices...", "96"))
         self.ports = mido.get_input_names()
         
         if not self.ports:
@@ -11,14 +15,14 @@ class MidiKeyboard:
             
         # Default to the first keyboard found
         self.target_port = self.ports[0]
-        print(f"[MIDI] Connected to: {self.target_port}")
+        print(_color(f"[MIDI] Connected to: {self.target_port}", "92"))
 
     def listen(self, on_press, on_release, should_continue=lambda: True):
         """
         Opens the port and listens forever. 
         on_press and on_release are functions passed in from main.py
         """
-        print(f"\n[READY] Listening for input on {self.target_port}...\n")
+        print(_color(f"\n[READY] Listening for input on {self.target_port}...\n", "94"))
         
         with mido.open_input(self.target_port) as inport:
             while should_continue():

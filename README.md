@@ -44,15 +44,7 @@ Current version: v0.0.2
 - synth_engine.py: synth engine, presets, and runtime controls
 - piano.sf2: SoundFont file (not tracked in git)
 
-## SoundFont Attribution
-
-This project uses the **YDP Grand Piano** SoundFont from the FreePats project.
-
-- Source: https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html
-- License: Creative Commons Attribution 3.0 (CC BY 3.0)
-
-Original samples are based on recordings from Zenph Studios and were adapted for FreePats by Roberto at zenvoid.org.
-
+## Setup SoundFont
 
 Download:
 
@@ -137,3 +129,22 @@ Import errors for fluidsynth or mido:
 ```bash
 pip install --upgrade pyfluidsynth mido python-rtmidi
 ```
+
+## Want to Contribute?
+
+Contributions are welcome! If you have ideas for improvements, bug fixes, or new features, please open an issue or submit a pull request.
+
+## SoundFont Attribution
+
+This project uses the **YDP Grand Piano** SoundFont from the FreePats project.
+
+- Source: https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html
+- License: Creative Commons Attribution 3.0 (CC BY 3.0)
+- Author: FreePats (zenvoid.org)
+
+Original samples are based on recordings from Zenph Studios and adapted for FreePats.
+
+## LICENSE
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
