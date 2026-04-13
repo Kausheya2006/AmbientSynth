@@ -67,10 +67,9 @@ Note: Keep piano.sf2 out of git tracking to avoid GitHub file size limits.
 - MIDI keyboard/controller
 - FluidSynth installed on the system
 
-macOS with Homebrew:
-
 ```bash
-brew install fluid-synth
+brew install fluid-synth # MacOS
+sudo apt install fluid-synth # Ubuntu
 ```
 
 ## Setup
