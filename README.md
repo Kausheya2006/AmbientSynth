@@ -44,19 +44,15 @@ Current version: v0.0.2
 - synth_engine.py: synth engine, presets, and runtime controls
 - piano.sf2: SoundFont file (not tracked in git)
 
-## SoundFont Used
+## SoundFont Attribution
 
-YDP Grand Piano
+This project uses the **YDP Grand Piano** SoundFont from the FreePats project.
 
-- Version: 2016-08-04
-- Built from the Zenph Studios Yamaha Disklavier Pro Piano multisamples for OLPC
-- SoundFont and sample modifications produced by roberto@zenvoid.org for the FreePats project
+- Source: https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html
+- License: Creative Commons Attribution 3.0 (CC BY 3.0)
 
-Samples from the OLPC sound sample library were donated to Dr. Richard Boulanger at cSounds.com to support OLPC developers, students, XO users, and computer/electronic musicians.
+Original samples are based on recordings from Zenph Studios and were adapted for FreePats by Roberto at zenvoid.org.
 
-The Disklavier Pro includes an internally controlled mechanism for precise performance capture. Original samples were performed by computer and recorded for OLPC by Dr. Mikhail Krishtal, Director of Music Research and Production, and the Zenph Studios team.
-
-License: Creative Commons Attribution 3.0
 
 Download:
 

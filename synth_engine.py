@@ -2,18 +2,26 @@ import fluidsynth
 import threading
 
 class AmbientSynth:
+    PRESETS = {
+        "ambient": {"reverb_send": 82, "chorus_send": 6, "sustain": 98, "release": 88},
+        "studio": {"reverb_send": 44, "chorus_send": 0, "sustain": 84, "release": 72},
+        "cinematic": {"reverb_send": 102, "chorus_send": 16, "sustain": 108, "release": 96},
+    }
+
     def __init__(self, soundfont_path):
         print("[Audio] Booting FluidSynth...")
         
         self.soundfont_path = soundfont_path
         self._lock = threading.Lock()
+        self.velocity_curve_exp = 1.5
         self.live_controls = {
-            "volume": 112,       # CC7
-            "expression": 118,   # CC11
-            "sustain": 110,      # CC64
-            "release": 96,       # CC72
-            "reverb_send": 84,   # CC91
-            "chorus_send": 30,   # CC93
+            "volume": 108,       # CC7
+            "expression": 112,   # CC11
+            "sustain": 88,       # CC64
+            "release": 78,       # CC72
+            "reverb_send": 60,   # CC91
+            "chorus_send": 0,    # CC93
+            "soft_pedal": 0,     # CC67
         }
         self._init_synth()
 
@@ -22,19 +30,19 @@ class AmbientSynth:
         self.fs = fluidsynth.Synth()
 
         # Tone shaping before audio start (prevents clipping and harsh artifacts)
-        self.fs.setting("synth.gain", 0.45)
+        self.fs.setting("synth.gain", 0.7)
 
         self.fs.setting("synth.reverb.active", 1)
-        self.fs.setting("synth.reverb.room-size", 0.88)
-        self.fs.setting("synth.reverb.damp", 0.55)
-        self.fs.setting("synth.reverb.width", 0.9)
-        self.fs.setting("synth.reverb.level", 0.33)
+        self.fs.setting("synth.reverb.room-size", 0.72)
+        self.fs.setting("synth.reverb.damp", 0.68)
+        self.fs.setting("synth.reverb.width", 0.85)
+        self.fs.setting("synth.reverb.level", 0.22)
 
-        self.fs.setting("synth.chorus.active", 1)
-        self.fs.setting("synth.chorus.nr", 2)
+        self.fs.setting("synth.chorus.active", 0)
+        self.fs.setting("synth.chorus.nr", 1)
         self.fs.setting("synth.chorus.speed", 0.3)
-        self.fs.setting("synth.chorus.depth", 4.0)
-        self.fs.setting("synth.chorus.level", 0.08)
+        self.fs.setting("synth.chorus.depth", 2.0)
+        self.fs.setting("synth.chorus.level", 0.0)
 
         # Start audio engine
         self.fs.start(driver="coreaudio")
@@ -55,6 +63,7 @@ class AmbientSynth:
         self.fs.cc(0, 72, self.live_controls["release"])
         self.fs.cc(0, 91, self.live_controls["reverb_send"])
         self.fs.cc(0, 93, self.live_controls["chorus_send"])
+        self.fs.cc(0, 67, self.live_controls["soft_pedal"])
 
     def set_live_control(self, name, value):
         """Set one runtime control (0-127) and apply immediately."""
@@ -71,15 +80,34 @@ class AmbientSynth:
             "release": 72,
             "reverb_send": 91,
             "chorus_send": 93,
+            "soft_pedal": 67,
         }
 
         with self._lock:
             self.fs.cc(0, cc_map[name], value)
 
+    def apply_preset(self, name):
+        """Apply one of the predefined live-control presets."""
+        if name not in self.PRESETS:
+            raise ValueError(f"Unknown preset: {name}")
+
+        for control, value in self.PRESETS[name].items():
+            self.set_live_control(control, value)
+
+    def _velocity_curve(self, velocity):
+        velocity = max(1, min(127, int(velocity)))
+        curved = int(((velocity / 127.0) ** self.velocity_curve_exp) * 127)
+        return max(1, min(127, curved))
+
+    def _update_brightness(self, velocity):
+        # Keep timbre shifts subtle to avoid brittle attacks.
+        brightness = int(50 + (velocity / 127.0) * 18)
+        self.fs.cc(0, 74, max(0, min(127, brightness)))
+
     def play_note(self, note, velocity=110):
-        # Keep dynamic range: avoid forcing every note to a hard strike.
-        velocity = max(35, min(118, velocity))
+        velocity = self._velocity_curve(velocity)
         with self._lock:
+            self._update_brightness(velocity)
             self.fs.noteon(0, note, velocity)
 
     def stop_note(self, note):
@@ -92,6 +120,7 @@ class AmbientSynth:
 
         try:
             with self._lock:
+                self.fs.system_reset()
                 self.fs.delete()
         except Exception:
             pass  # avoid crash if already deleted
@@ -104,6 +133,7 @@ class AmbientSynth:
         """Shutdown safely."""
         try:
             with self._lock:
+                self.fs.system_reset()
                 self.fs.cc(0, 64, 0)
                 self.fs.delete()
         except Exception:

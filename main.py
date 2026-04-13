@@ -15,6 +15,7 @@ def _draw_slider(stdscr, row, label, value, selected, width=26):
 def run_terminal_controls(synth):
     controls = [
         ("sustain", "Sustain Pedal"),
+        ("soft_pedal", "Soft Pedal"),
         ("release", "Release Time"),
         ("reverb_send", "Reverb Send"),
         ("chorus_send", "Chorus Send"),
@@ -30,17 +31,30 @@ def run_terminal_controls(synth):
         while True:
             stdscr.erase()
             stdscr.addstr(1, 2, "Ambient Controls (live)")
-            stdscr.addstr(2, 2, "UP/DOWN: select  LEFT/RIGHT: adjust  q: quit")
+            stdscr.addstr(2, 2, "UP/DOWN: select  LEFT/RIGHT: adjust  1/2/3: presets")
+            stdscr.addstr(3, 2, "1=ambient  2=studio  3=cinematic  r=reload  q=quit")
 
             for i, (key, label) in enumerate(controls):
                 value = synth.live_controls[key]
-                _draw_slider(stdscr, 4 + i, label, value, selected == i)
+                _draw_slider(stdscr, 5 + i, label, value, selected == i)
 
             stdscr.refresh()
             key = stdscr.getch()
 
             if key in (ord("q"), ord("Q")):
                 return
+            if key == ord("1"):
+                synth.apply_preset("ambient")
+                continue
+            if key == ord("2"):
+                synth.apply_preset("studio")
+                continue
+            if key == ord("3"):
+                synth.apply_preset("cinematic")
+                continue
+            if key in (ord("r"), ord("R")):
+                synth.reload()
+                continue
             if key == curses.KEY_UP:
                 selected = (selected - 1) % len(controls)
             elif key == curses.KEY_DOWN:
