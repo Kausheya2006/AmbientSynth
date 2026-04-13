@@ -2,3 +2,4 @@ __pycache__
 .venv
 piano.sf2
 recordings/
+.DS_Store
