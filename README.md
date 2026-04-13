@@ -1,6 +1,6 @@
 # Ambient Synth
 
-<image src='assets/image.png' alt='Ambient Synth Terminal UI' width='800'/>
+<image src='assets/image.png' alt='Ambient Synth Terminal UI' width='700'/>
 A lightweight terminal-based piano synthesizer for MIDI keyboards, built with Python and FluidSynth.
 
 This project focuses on simple setup, low overhead, and live sound control while you play.
