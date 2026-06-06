@@ -1,9 +1,25 @@
-# Ambient Synth
+# AmbientSynth
 
-<image src='assets/image.png' alt='Ambient Synth Terminal UI' width='700'/>
-A lightweight terminal-based piano synthesizer for MIDI keyboards, built with Python and FluidSynth.
+<p align="center">
+  <img src="https://img.shields.io/badge/Language-Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python Language" />
+  <img src="https://img.shields.io/badge/Audio-PyAudio-FFD700?style=for-the-badge&logo=soundcharts&logoColor=black" alt="PyAudio" />
+  <img src="https://img.shields.io/badge/Math-NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy Engine" />
+  <img src="https://img.shields.io/badge/Hardware-MIDI%20Mido-000000?style=for-the-badge&logo=midi&logoColor=white" alt="MIDI Interface" />
+</p>
+
+AmbientSynth is a a lightweight terminal-based piano synthesizer for MIDI keyboards, built with Python and FluidSynth.
 
 This project focuses on simple setup, low overhead, and live sound control while you play.
+
+---
+
+## Application Interface & Design
+
+### Graphical Dashboard Layout
+
+<img src="assets/image.png" width="700" alt="AmbientSynth Graphical Studio Preview" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);" />
+
+---
 
 ## Version
 
